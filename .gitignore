@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Visual Studio
+.vs/
+*.rsuser
+
+# Логи
+out.log
+*.log
+
+# Docker
+.dockerignore
+
+# paths
+appsettings.Development.json

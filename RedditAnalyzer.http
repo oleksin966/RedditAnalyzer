@@ -1,0 +1,6 @@
+@RedditAnalyzer_HostAddress = http://localhost:5140
+
+GET {{RedditAnalyzer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

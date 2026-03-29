@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  reddit-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reddit-analyzer
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./out.log:/app/out.log
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    restart: unless-stopped
