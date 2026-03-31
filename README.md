@@ -20,7 +20,7 @@ A web service for analyzing Reddit posts by keywords.
 
 1. Clone the repository
 ```bash
-git clone https://github.com/YourName/RedditAnalyzer.git
+git clone https://github.com/oleksin966/RedditAnalyzer.git
 cd RedditAnalyzer
 ```
 
@@ -44,7 +44,7 @@ http://localhost:8080/swagger ← Swagger UI
 
 2. Clone the repository
 ```bash
-git clone https://github.com/YourName/RedditAnalyzer.git
+git clone https://github.com/oleksin966/RedditAnalyzer.git
 cd RedditAnalyzer
 ```
 
