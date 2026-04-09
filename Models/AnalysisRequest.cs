@@ -4,6 +4,8 @@ public class AnalysisRequest
 {
     public List<SubredditQuery> Items { get; set; } = new();
     public int Limit { get; set; } = 25;
+    public bool UseHtmlParser { get; set; } = false; 
+
 }
 
 public class SubredditQuery

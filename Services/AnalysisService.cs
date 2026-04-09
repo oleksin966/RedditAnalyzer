@@ -5,6 +5,7 @@ namespace RedditAnalyzer.Services;
 public class AnalysisService
 {
     private readonly RedditService _redditService;
+    private readonly RedditHtmlParser _htmlParser;
     private readonly ILogger<AnalysisService> _logger;
 
     private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -12,9 +13,13 @@ public class AnalysisService
         ".jpg", ".jpeg", ".png", ".gif", ".webp"
     };
 
-    public AnalysisService(RedditService redditService, ILogger<AnalysisService> logger)
+    public AnalysisService(
+        RedditService redditService,
+        RedditHtmlParser htmlParser,
+        ILogger<AnalysisService> logger)
     {
         _redditService = redditService;
+        _htmlParser = htmlParser;
         _logger = logger;
     }
 
@@ -22,21 +27,24 @@ public class AnalysisService
     {
         var result = new Dictionary<string, List<PostResult>>();
 
-        // Concurrency — all subreddits are loaded concurrently
+        _logger.LogInformation(
+            "Using {Parser} parser",
+            request.UseHtmlParser ? "HTML" : "API");
+
         var tasks = request.Items.Select(async item =>
         {
-            var posts = await _redditService.GetPostsAsync(item.Subreddit, request.Limit);
+            // Вибираємо парсер залежно від запиту
+            var posts = request.UseHtmlParser
+                ? await _htmlParser.GetPostsAsync(item.Subreddit, request.Limit)
+                : await _redditService.GetPostsAsync(item.Subreddit, request.Limit);
 
             var filtered = posts
                 .Where(p => item.Keywords.Any(k =>
-                    // Filter by title
                     p.Title.Contains(k, StringComparison.OrdinalIgnoreCase) ||
-                    // Filter by post body
                     p.SelfText.Contains(k, StringComparison.OrdinalIgnoreCase)))
                 .Select(p => new PostResult
                 {
                     Title = p.Title,
-                    // Check if the post has an image
                     HasImage = IsImage(p)
                 })
                 .ToList();
@@ -60,15 +68,18 @@ public class AnalysisService
 
     private bool IsImage(RedditPostRaw post)
     {
-        // Check by post_hint
         if (post.PostHint == "image") return true;
-
-        // Check by URL extension
         if (string.IsNullOrEmpty(post.Url)) return false;
 
-        var uri = new Uri(post.Url);
-        var extension = Path.GetExtension(uri.AbsolutePath);
-
-        return ImageExtensions.Contains(extension);
+        try
+        {
+            var uri = new Uri(post.Url);
+            var extension = Path.GetExtension(uri.AbsolutePath);
+            return ImageExtensions.Contains(extension);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -13,7 +13,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// API parser
 builder.Services.AddHttpClient<RedditAnalyzer.Services.RedditService>();
+
+// HTML parser
+builder.Services.AddHttpClient<RedditAnalyzer.Services.RedditHtmlParser>();
+
+// Analysis service
 builder.Services.AddScoped<RedditAnalyzer.Services.AnalysisService>();
 
 var app = builder.Build();
@@ -24,9 +41,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseDefaultFiles();  
-app.UseStaticFiles();  
-app.UseHttpsRedirection();
+app.UseCors();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthorization();
 app.MapControllers();
 
