@@ -1,5 +1,3 @@
----
-
 ## Usage
 
 The service accepts a list of subreddits with keywords,
