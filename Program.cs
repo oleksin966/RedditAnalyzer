@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient<RedditAnalyzer.Services.RedditService>();
 
 // HTML parser
-builder.Services.AddHttpClient<RedditAnalyzer.Services.RedditHtmlParser>();
+builder.Services.AddScoped<RedditAnalyzer.Services.RedditHtmlParser>();
 
 // Analysis service
 builder.Services.AddScoped<RedditAnalyzer.Services.AnalysisService>();

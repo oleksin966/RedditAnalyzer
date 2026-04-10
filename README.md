@@ -1,64 +1,3 @@
-# Reddit Analyzer API
-
-A web service for analyzing Reddit posts by keywords.
-
----
-
-## Tech Stack
-
-- .NET 10.0
-- ASP.NET Core Web API
-- Serilog (logging)
-- Swagger UI
-- Docker
-
----
-
-## Getting Started
-
-### Run with Docker (Recommended)
-
-1. Clone the repository
-```bash
-git clone https://github.com/oleksin966/RedditAnalyzer.git
-cd RedditAnalyzer
-```
-
-2. Start the application
-```bash
-docker-compose up --build
-```
-
-3. Open in browser
-```
-http://localhost:8080        ← UI
-http://localhost:8080/swagger ← Swagger UI
-```
-
----
-
-### Run without Docker
-
-1. Install .NET 10.0 SDK
-   https://dotnet.microsoft.com/download
-
-2. Clone the repository
-```bash
-git clone https://github.com/oleksin966/RedditAnalyzer.git
-cd RedditAnalyzer
-```
-
-3. Run the project
-```bash
-dotnet run
-```
-
-4. Open in browser
-```
-http://localhost:5000         ← UI
-http://localhost:5000/swagger ← Swagger UI
-```
-
 ---
 
 ## Usage
@@ -66,10 +5,18 @@ http://localhost:5000/swagger ← Swagger UI
 The service accepts a list of subreddits with keywords,
 fetches posts from Reddit and returns filtered results.
 
+Two parsing modes are available:
+- **Default** — lightweight API-based fetching
+- **HTML Parser** — full browser rendering via Playwright/Chromium (`useHtmlParser: true`)
+
+Use `useHtmlParser: true` when Reddit blocks API requests or when you need
+to fetch post body text for keyword filtering.
+
 ### Features
 
 - Fetch first N posts from each subreddit
-- Filter posts by title and post body
+- Filter posts by title and post body text
+- Two parsing modes: API and HTML (Playwright)
 - Detect whether a post contains an image
 - Export results as a JSON file
 - Logging to out.log file
@@ -101,7 +48,8 @@ fetches posts from Reddit and returns filtered results.
       "keywords": ["cat", "kitten"]
     }
   ],
-  "limit": 25
+  "limit": 20,
+  "useHtmlParser": false
 }
 ```
 
@@ -111,8 +59,9 @@ fetches posts from Reddit and returns filtered results.
 |---|---|---|
 | `items` | array | List of subreddits with keywords |
 | `subreddit` | string | Subreddit name (e.g. `r/nature`) |
-| `keywords` | array | Keywords to filter posts by |
+| `keywords` | array | Keywords to filter posts by title and body |
 | `limit` | integer | Number of posts to fetch per subreddit |
+| `useHtmlParser` | boolean | Use Playwright HTML parser instead of default. Default: `false` |
 
 ---
 
@@ -122,17 +71,17 @@ fetches posts from Reddit and returns filtered results.
   "/r/nature": [
     {
       "title": "Beautiful forest in autumn",
-      "hasImage": true
+      "hasMedia": "video"
     },
     {
       "title": "River in the mountains",
-      "hasImage": false
+      "hasMedia": "gallery"
     }
   ],
   "/r/cats": [
     {
       "title": "My cat learned to open doors",
-      "hasImage": true
+      "hasMedia": "image"
     }
   ]
 }
@@ -143,17 +92,18 @@ fetches posts from Reddit and returns filtered results.
 | Field | Type | Description |
 |---|---|---|
 | `title` | string | Post title |
-| `hasImage` | boolean | Whether the post contains an image |
+| `hasMedia` | string | Type of media in the post (`image`, `video`, `gallery`, or `false` if none) |
 
 ---
 
 ## Logging
 
+
 All events are logged to `out.log` file:
 ```
-2024-01-01 12:00:00 [INF] Fetching posts from r/nature
-2024-01-01 12:00:01 [INF] Subreddit r/nature: found 3 posts
-2024-01-01 12:00:02 [ERR] Failed to connect to Reddit
+2026-10-04 12:00:00 [INF] Fetching posts from r/nature
+2026-10-04 12:00:01 [INF] Subreddit r/nature: found 3 posts
+2026-10-04 12:00:02 [ERR] Failed to connect to Reddit
 ```
 
 ---

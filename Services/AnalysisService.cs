@@ -8,11 +8,6 @@ public class AnalysisService
     private readonly RedditHtmlParser _htmlParser;
     private readonly ILogger<AnalysisService> _logger;
 
-    private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".jpg", ".jpeg", ".png", ".gif", ".webp"
-    };
-
     public AnalysisService(
         RedditService redditService,
         RedditHtmlParser htmlParser,
@@ -33,9 +28,9 @@ public class AnalysisService
 
         var tasks = request.Items.Select(async item =>
         {
-            // Вибираємо парсер залежно від запиту
+            // Choose parser based on request
             var posts = request.UseHtmlParser
-                ? await _htmlParser.GetPostsAsync(item.Subreddit, request.Limit)
+                ? await _htmlParser.GetPostsAsync(item.Subreddit, request.Limit, item.Keywords)
                 : await _redditService.GetPostsAsync(item.Subreddit, request.Limit);
 
             var filtered = posts
@@ -45,7 +40,7 @@ public class AnalysisService
                 .Select(p => new PostResult
                 {
                     Title = p.Title,
-                    HasImage = IsImage(p)
+                    HasMedia = p.HasMedia
                 })
                 .ToList();
 
@@ -64,22 +59,5 @@ public class AnalysisService
         }
 
         return result;
-    }
-
-    private bool IsImage(RedditPostRaw post)
-    {
-        if (post.PostHint == "image") return true;
-        if (string.IsNullOrEmpty(post.Url)) return false;
-
-        try
-        {
-            var uri = new Uri(post.Url);
-            var extension = Path.GetExtension(uri.AbsolutePath);
-            return ImageExtensions.Contains(extension);
-        }
-        catch
-        {
-            return false;
-        }
     }
 }

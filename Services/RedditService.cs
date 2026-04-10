@@ -23,9 +23,15 @@ public class RedditService
 
         var response = await _httpClient.GetFromJsonAsync<RedditApiResponse>(url);
 
-        return response?.Data?.Children?
-            .Select(c => c.Data)
-            .ToList() ?? new List<RedditPostRaw>();
+        var posts = response?.Data?.Children?
+        .Select(c => c.Data)
+        .ToList()
+        ?? new List<RedditPostRaw>();
+
+        foreach (var post in posts)
+            post.ResolveHasMedia();
+
+        return posts;
     }
 }
 
@@ -57,4 +63,35 @@ public class RedditPostRaw
 
     [System.Text.Json.Serialization.JsonPropertyName("post_hint")]
     public string PostHint { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("is_gallery")]
+    public bool IsGallery { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("has_text")]
+    public bool HasText { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("keyword_matched")]
+    public bool KeywordMatched { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("has_media")]
+    public string HasMedia { get; set; } = string.Empty;
+
+    public void ResolveHasMedia()
+    {
+        if (IsGallery)
+        {
+            HasMedia = "Gallery";
+            return;
+        }
+
+        HasMedia = PostHint switch
+        {
+            "image" => "Image",
+            "rich:video" => "Video",
+            "hosted:video" => "Video",
+            _ => string.Empty
+        };
+    }
 }
+
+
